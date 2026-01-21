@@ -89,7 +89,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         SDL_Rect enemy_rect = {
             (int)enemies[i].x, (int)enemies[i].y,
             enemies[i].w, enemies[i].h};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
         SDL_RenderFillRect(renderer, &enemy_rect);
     }
 
