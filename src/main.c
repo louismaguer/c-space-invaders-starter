@@ -27,6 +27,20 @@ int main(void)
     Entity bullet = {0};
     bool bullet_active = false;
 
+    Entity enemies[ENEMIES_NUMBER];
+
+    for(size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
+        for(size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
+            enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
+                .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,
+                .y = SCREEN_HEIGHT/(2*ENEMIES_NUMBER_PER_COLUMN) * i,
+                .w = ENEMY_WIDTH,
+                .h = ENEMY_HEIGHT,
+                .vx = 0,
+                .vy = 0};
+        }
+    }
+
     while (running)
     {
         Uint32 ticks = SDL_GetTicks();
@@ -39,7 +53,7 @@ int main(void)
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
         update(&player, &bullet, &bullet_active, dt);
-        render(renderer, &player, &bullet, bullet_active);
+        render(renderer, &player, &enemies, &bullet, bullet_active);
     }
 
     cleanup(window, renderer);
