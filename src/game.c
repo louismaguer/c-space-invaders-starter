@@ -57,7 +57,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *bullet, bool *bullet_active, float dt)
+void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active, float dt)
 {
     player->x += player->vx * dt;
 
@@ -71,6 +71,10 @@ void update(Entity *player, Entity *bullet, bool *bullet_active, float dt)
         bullet->y += bullet->vy * dt;
         if (bullet->y + bullet->h < 0)
             *bullet_active = false;
+    }
+
+    for(size_t i; i<ENEMIES_NUMBER; i++){
+        enemies[i].y += enemies[i].vy*dt;
     }
 }
 
