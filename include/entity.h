@@ -3,6 +3,7 @@
 
 typedef struct
 {
+    bool alive;
     float x, y;
     float vx, vy;
     int w, h;

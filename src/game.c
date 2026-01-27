@@ -75,6 +75,13 @@ void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active
 
     for(size_t i; i<ENEMIES_NUMBER; i++){
         enemies[i].y += enemies[i].vy*dt;
+        if (*bullet_active)
+    {
+        if(SDL_HasIntersection(&(SDL_Rect){(int)bullet->x, (int)bullet->y, bullet->w, bullet->h}, &(SDL_Rect){(int)enemies[i].x, (int)enemies[i].y, enemies[i].w, enemies[i].h})){
+            enemies[i].alive = false;
+            bullet_active = false;
+        }
+    }
     }
 }
 
@@ -90,11 +97,13 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_RenderFillRect(renderer, &player_rect);
 
     for(size_t i=0; i<ENEMIES_NUMBER; i++){
-        SDL_Rect enemy_rect = {
-            (int)enemies[i].x, (int)enemies[i].y,
-            enemies[i].w, enemies[i].h};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &enemy_rect);
+        if(enemies[i].alive){
+            SDL_Rect enemy_rect = {
+                (int)enemies[i].x, (int)enemies[i].y,
+                enemies[i].w, enemies[i].h};
+            SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+            SDL_RenderFillRect(renderer, &enemy_rect);
+        }
     }
 
     if (bullet_active)

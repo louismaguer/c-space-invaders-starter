@@ -32,6 +32,7 @@ int main(void)
     for(size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
         for(size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
             enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
+                .alive = true,
                 .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,
                 .y = SCREEN_HEIGHT/(2*ENEMIES_NUMBER_PER_COLUMN) * i,
                 .w = ENEMY_WIDTH,
