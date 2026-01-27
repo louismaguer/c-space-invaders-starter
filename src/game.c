@@ -76,14 +76,17 @@ void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active
     for(size_t i=0; i<ENEMIES_NUMBER; i++){
         enemies[i].y += enemies[i].vy*dt;
         if (*bullet_active)
-    {
+{
         SDL_Rect * bullet_rect = &(bullet->rect);
         SDL_Rect * enemy_rect = &(enemies[i].rect);
-        if(SDL_HasIntersection(bullet_rect, enemy_rect)){
+        if(enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
             enemies[i].alive = false;
             *bullet_active = false;
         }
     }
+        if(!*bullet_active){
+
+        }
     }
 }
 
