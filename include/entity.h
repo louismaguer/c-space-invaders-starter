@@ -7,6 +7,7 @@ typedef struct
     float x, y;
     float vx, vy;
     int w, h;
+    SDL_Rect rect;
 } Entity;
 
 #endif

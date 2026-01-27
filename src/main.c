@@ -53,8 +53,8 @@ int main(void)
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, &enemies, &bullet, &bullet_active, dt);
-        render(renderer, &player, &enemies, &bullet, bullet_active);
+        update(&player, enemies, &bullet, &bullet_active, dt);
+        render(renderer, &player, enemies, &bullet, bullet_active);
     }
 
     cleanup(window, renderer);

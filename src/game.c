@@ -73,13 +73,15 @@ void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active
             *bullet_active = false;
     }
 
-    for(size_t i; i<ENEMIES_NUMBER; i++){
+    for(size_t i=0; i<ENEMIES_NUMBER; i++){
         enemies[i].y += enemies[i].vy*dt;
         if (*bullet_active)
     {
-        if(SDL_HasIntersection(&(SDL_Rect){(int)bullet->x, (int)bullet->y, bullet->w, bullet->h}, &(SDL_Rect){(int)enemies[i].x, (int)enemies[i].y, enemies[i].w, enemies[i].h})){
+        SDL_Rect * bullet_rect = &(bullet->rect);
+        SDL_Rect * enemy_rect = &(enemies[i].rect);
+        if(SDL_HasIntersection(bullet_rect, enemy_rect)){
             enemies[i].alive = false;
-            bullet_active = false;
+            *bullet_active = false;
         }
     }
     }
@@ -93,6 +95,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_Rect player_rect = {
         (int)player->x, (int)player->y,
         player->w, player->h};
+        player->rect = player_rect;
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &player_rect);
 
@@ -101,6 +104,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
             SDL_Rect enemy_rect = {
                 (int)enemies[i].x, (int)enemies[i].y,
                 enemies[i].w, enemies[i].h};
+            enemies[i].rect = enemy_rect;
             SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
             SDL_RenderFillRect(renderer, &enemy_rect);
         }
@@ -111,6 +115,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         SDL_Rect bullet_rect = {
             (int)bullet->x, (int)bullet->y,
             bullet->w, bullet->h};
+        bullet->rect = bullet_rect;
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(renderer, &bullet_rect);
     }

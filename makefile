@@ -1,6 +1,6 @@
 # Compiler & flags
 CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude `sdl2-config --cflags`
+CFLAGS = -Wall -Wextra -Iinclude `sdl2-config --cflags` -g
 LDFLAGS = `sdl2-config --libs`
 
 # Dossiers
