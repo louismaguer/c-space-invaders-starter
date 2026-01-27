@@ -3,13 +3,11 @@
 #include "entity.h"
 #include "game.h"
 
-int main(void)
-{
+int main(void){
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (!init(&window, &renderer))
-    {
+    if (!init(&window, &renderer)){
         return 1;
     }
 
@@ -43,8 +41,7 @@ int main(void)
         }
     }
 
-    while (running)
-    {
+    while (running){
         Uint32 ticks = SDL_GetTicks();
         float dt = (ticks - last_ticks) / 1000.0f;
         if (dt > 0.05f)

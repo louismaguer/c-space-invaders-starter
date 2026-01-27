@@ -2,26 +2,21 @@
 #include "game.h"
 #include <stdio.h>
 
-bool init(SDL_Window **window, SDL_Renderer **renderer)
-{
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    {
+bool init(SDL_Window **window, SDL_Renderer **renderer){
+    if (SDL_Init(SDL_INIT_VIDEO) != 0){
         SDL_Log("Erreur SDL_Init: %s", SDL_GetError());
         return false;
     }
 
-    *window = SDL_CreateWindow("Space Invaders (SDL)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-    if (!*window)
-    {
+    *window = SDL_CreateWindow("Space Invaders (SDL)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    if (!*window){
         SDL_Log("Erreur SDL_CreateWindow: %s", SDL_GetError());
         SDL_Quit();
         return false;
     }
 
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
-    if (!*renderer)
-    {
+    if (!*renderer){
         SDL_Log("Erreur SDL_CreateRenderer: %s", SDL_GetError());
         SDL_DestroyWindow(*window);
         SDL_Quit();
@@ -31,11 +26,9 @@ bool init(SDL_Window **window, SDL_Renderer **renderer)
     return true;
 }
 
-void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active)
-{
+void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active){
     SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
+    while (SDL_PollEvent(&event)){
         if (event.type == SDL_QUIT)
             *running = false;
     }
@@ -46,8 +39,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     if (keys[SDL_SCANCODE_RIGHT])
         player->vx = PLAYER_SPEED;
 
-    if (keys[SDL_SCANCODE_SPACE] && !*bullet_active)
-    {
+    if (keys[SDL_SCANCODE_SPACE] && !*bullet_active){
         *bullet_active = true;
         bullet->x = player->x + player->w / 2 - BULLET_WIDTH / 2;
         bullet->y = player->y;
@@ -57,8 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, float dt, bool *running)
-{
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, float dt, bool *running){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -66,8 +57,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     if (player->x + player->w > SCREEN_WIDTH)
         player->x = SCREEN_WIDTH - player->w;
 
-    if (*bullet_active)
-    {
+    if (*bullet_active){
         bullet->y += bullet->vy * dt;
         if (bullet->y + bullet->h < 0)
             *bullet_active = false;
@@ -82,16 +72,15 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
                 break;
             }
         }
-        if (*bullet_active)
-{
-        SDL_Rect * bullet_rect = &(bullet->rect);
-        SDL_Rect * enemy_rect = &(enemies[i].rect);
-        if(enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
-            enemies[i].alive = false;
-            *enemies_count -= 1;
-            *bullet_active = false;
+        if (*bullet_active){
+            SDL_Rect * bullet_rect = &(bullet->rect);
+            SDL_Rect * enemy_rect = &(enemies[i].rect);
+            if(enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
+                enemies[i].alive = false;
+                *enemies_count -= 1;
+                *bullet_active = false;
+            }
         }
-}
     }
 
     if(*enemies_count == 0){
@@ -100,8 +89,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active)
-{
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -123,8 +111,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         }
     }
 
-    if (bullet_active)
-    {
+    if (bullet_active){
         SDL_Rect bullet_rect = {
             (int)bullet->x, (int)bullet->y,
             bullet->w, bullet->h};
@@ -136,8 +123,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_RenderPresent(renderer);
 }
 
-void cleanup(SDL_Window *window, SDL_Renderer *renderer)
-{
+void cleanup(SDL_Window *window, SDL_Renderer *renderer){
     if (renderer)
         SDL_DestroyRenderer(renderer);
     if (window)
