@@ -57,7 +57,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active, float dt)
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, float dt, bool *running)
 {
     player->x += player->vx * dt;
 
@@ -74,19 +74,29 @@ void update(Entity *player, Entity *enemies, Entity *bullet, bool *bullet_active
     }
 
     for(size_t i=0; i<ENEMIES_NUMBER; i++){
-        enemies[i].y += enemies[i].vy*dt;
+        if(enemies[i].alive){
+            enemies[i].y += enemies[i].vy*dt;
+            if(enemies[i].y > SCREEN_HEIGHT - 60){
+                *running = false;
+                printf("DÉFAITE...");
+                break;
+            }
+        }
         if (*bullet_active)
 {
         SDL_Rect * bullet_rect = &(bullet->rect);
         SDL_Rect * enemy_rect = &(enemies[i].rect);
         if(enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
             enemies[i].alive = false;
+            *enemies_count -= 1;
             *bullet_active = false;
         }
+}
     }
-        if(!*bullet_active){
 
-        }
+    if(*enemies_count == 0){
+        *running = false;
+        printf("VICTOIRE !");
     }
 }
 

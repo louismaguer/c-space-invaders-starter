@@ -27,6 +27,7 @@ int main(void)
     Entity bullet = {0};
     bool bullet_active = false;
 
+    size_t enemies_count = ENEMIES_NUMBER;
     Entity enemies[ENEMIES_NUMBER];
 
     for(size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
@@ -53,7 +54,7 @@ int main(void)
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &bullet, &bullet_active, dt);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, dt, &running);
         render(renderer, &player, enemies, &bullet, bullet_active);
     }
 
