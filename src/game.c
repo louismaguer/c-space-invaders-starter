@@ -65,7 +65,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*bullet_enemies_active){
         bullet_enemies->y += bullet_enemies->vy * dt;
-        if (bullet_enemies->y + bullet_enemies->h < 0)
+        if (bullet_enemies->y + bullet_enemies->h > SCREEN_HEIGHT)
             *bullet_enemies_active = false;
     }
 
@@ -106,7 +106,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         if(alive_count > 0){
             size_t index_aux_enemy = rand() % alive_count;
             size_t index_enemy = index_alive[index_aux_enemy];
-        time_since_last_shot = 0;
+        *time_since_last_shot = 0;
         *bullet_enemies_active = true;
         bullet_enemies->x = enemies[index_enemy].x + enemies[index_enemy].w / 2 - BULLET_WIDTH / 2;
         bullet_enemies->y = enemies[index_enemy].y;
