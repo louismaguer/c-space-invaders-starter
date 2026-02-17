@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float dt, bool *running){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float *time_since_last_acceleration, float dt, bool *running){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -69,10 +69,17 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *bullet_enemies_active = false;
     }
 
+    if (*time_since_last_acceleration >= TIME_BETWEEN_ACCELERATIONS){
+        *time_since_last_acceleration = 0;
+        for (size_t i=0; i<ENEMIES_NUMBER; i++){
+            enemies[i].vy += SPEED_INCREMENT;
+        }
+    }
+                
     for (size_t i=0; i<ENEMIES_NUMBER; i++){
-        if(enemies[i].alive){
+        if (enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
-            if(enemies[i].y > SCREEN_HEIGHT - 60){
+            if (enemies[i].y > SCREEN_HEIGHT - 60){
                 *running = false;
                 printf("DÉFAITE...");
                 break;
@@ -81,7 +88,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         if (*bullet_active){
             SDL_Rect * bullet_rect = &(bullet->rect);
             SDL_Rect * enemy_rect = &(enemies[i].rect);
-            if(enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
+            if (enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
                 enemies[i].alive = false;
                 *enemies_count -= 1;
                 *bullet_active = false;
@@ -98,7 +105,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     if (*bullet_enemies_active){
         SDL_Rect * bullet_enemies_rect = &(bullet_enemies->rect);
         SDL_Rect * player_rect = &(player->rect);
-        if(SDL_HasIntersection(bullet_enemies_rect, player_rect)){
+        if (SDL_HasIntersection(bullet_enemies_rect, player_rect)){
             *bullet_enemies_active = false;
             player->hp -= 1;
         }
