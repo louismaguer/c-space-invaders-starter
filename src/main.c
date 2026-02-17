@@ -33,8 +33,8 @@ int main(void){
     size_t enemies_count = ENEMIES_NUMBER;
     Entity enemies[ENEMIES_NUMBER];
 
-    for(size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
-        for(size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
+    for (size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
+        for (size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
             enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
                 .alive = true,
                 .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,

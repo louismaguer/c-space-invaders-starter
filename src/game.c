@@ -69,7 +69,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *bullet_enemies_active = false;
     }
 
-    for(size_t i=0; i<ENEMIES_NUMBER; i++){
+    for (size_t i=0; i<ENEMIES_NUMBER; i++){
         if(enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
             if(enemies[i].y > SCREEN_HEIGHT - 60){
@@ -85,13 +85,28 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
                 enemies[i].alive = false;
                 *enemies_count -= 1;
                 *bullet_active = false;
+                break;
             }
         }
     }
 
-    if(*enemies_count == 0){
+    if (*enemies_count == 0){
         *running = false;
         printf("VICTOIRE !");
+    }
+
+    if (*bullet_enemies_active){
+        SDL_Rect * bullet_enemies_rect = &(bullet_enemies->rect);
+        SDL_Rect * player_rect = &(player->rect);
+        if(SDL_HasIntersection(bullet_enemies_rect, player_rect)){
+            *bullet_enemies_active = false;
+            player->hp -= 1;
+        }
+    }
+    
+    if (player->hp == 0){
+        *running = false;
+        printf("DÉFAITE...");
     }
 
     if (*time_since_last_shot >= TIME_BETWEEN_SHOTS && !*bullet_enemies_active){
@@ -128,7 +143,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &player_rect);
 
-    for(size_t i=0; i<ENEMIES_NUMBER; i++){
+    for (size_t i=0; i<ENEMIES_NUMBER; i++){
         if(enemies[i].alive){
             SDL_Rect enemy_rect = {
                 (int)enemies[i].x, (int)enemies[i].y,
@@ -148,7 +163,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         SDL_RenderFillRect(renderer, &bullet_rect);
     }
 
-        if (bullet_enemies_active){
+    if (bullet_enemies_active){
         SDL_Rect bullet_enemies_rect = {
             (int)bullet_enemies->x, (int)bullet_enemies->y,
             bullet_enemies->w, bullet_enemies->h};
