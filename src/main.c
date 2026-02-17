@@ -21,7 +21,7 @@ int main(void){
         .h = PLAYER_HEIGHT,
         .vx = 0,
         .vy = 0,
-        .hp = INITIAL_HP};
+        .hp = MAX_HP};
 
     Entity bullet = {0};
     bool bullet_active = false;

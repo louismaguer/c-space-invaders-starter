@@ -179,7 +179,17 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
 
-    SDL_RenderPresent(renderer);
+int progression = (int)(((float)player->hp/MAX_HP)*BAR_WIDTH);
+
+SDL_Rect hp_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, progression, BAR_HEIGHT};
+SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); 
+SDL_RenderFillRect(renderer, &hp_rect);
+
+SDL_Rect outline_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, BAR_WIDTH, BAR_HEIGHT};
+SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+SDL_RenderDrawRect(renderer, &outline_rect);
+
+SDL_RenderPresent(renderer);
 }
 
 void cleanup(SDL_Window *window, SDL_Renderer *renderer){
