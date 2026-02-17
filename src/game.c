@@ -175,7 +175,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
             (int)bullet_enemies->x, (int)bullet_enemies->y,
             bullet_enemies->w, bullet_enemies->h};
         bullet_enemies->rect = bullet_enemies_rect;
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
 
