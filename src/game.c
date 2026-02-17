@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, float dt, bool *running){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float dt, bool *running){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -61,6 +61,12 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         bullet->y += bullet->vy * dt;
         if (bullet->y + bullet->h < 0)
             *bullet_active = false;
+    }
+
+    if (*bullet_enemies_active){
+        bullet_enemies->y += bullet_enemies->vy * dt;
+        if (bullet_enemies->y + bullet_enemies->h < 0)
+            *bullet_enemies_active = false;
     }
 
     for(size_t i=0; i<ENEMIES_NUMBER; i++){
@@ -87,9 +93,31 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         *running = false;
         printf("VICTOIRE !");
     }
+
+    if (*time_since_last_shot >= TIME_BETWEEN_SHOTS && !*bullet_enemies_active){
+        size_t index_alive[*enemies_count];
+        size_t alive_count = 0;
+        for (size_t i=0; i<ENEMIES_NUMBER; i++){
+            if (enemies[i].alive){
+                index_alive[alive_count] = i;
+                alive_count++;
+            }
+        }
+        if(alive_count > 0){
+            size_t index_aux_enemy = rand() % alive_count;
+            size_t index_enemy = index_alive[index_aux_enemy];
+        time_since_last_shot = 0;
+        *bullet_enemies_active = true;
+        bullet_enemies->x = enemies[index_enemy].x + enemies[index_enemy].w / 2 - BULLET_WIDTH / 2;
+        bullet_enemies->y = enemies[index_enemy].y;
+        bullet_enemies->w = BULLET_WIDTH;
+        bullet_enemies->h = BULLET_HEIGHT;
+        bullet_enemies->vy = BULLET_SPEED;
+        }
+    }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active){
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -118,6 +146,15 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         bullet->rect = bullet_rect;
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(renderer, &bullet_rect);
+    }
+
+        if (bullet_enemies_active){
+        SDL_Rect bullet_enemies_rect = {
+            (int)bullet_enemies->x, (int)bullet_enemies->y,
+            bullet_enemies->w, bullet_enemies->h};
+        bullet_enemies->rect = bullet_enemies_rect;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
 
     SDL_RenderPresent(renderer);

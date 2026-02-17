@@ -11,6 +11,7 @@
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 20
 #define PLAYER_SPEED 400.0f
+#define INITIAL_HP 3
 
 #define BULLET_WIDTH 10
 #define BULLET_HEIGHT 20
@@ -19,6 +20,7 @@
 #define ENEMIES_NUMBER_PER_LINE 5
 #define ENEMIES_NUMBER_PER_COLUMN 2
 #define ENEMIES_NUMBER (ENEMIES_NUMBER_PER_LINE * ENEMIES_NUMBER_PER_COLUMN)
+#define TIME_BETWEEN_SHOTS 5.0f
 
 #define ENEMY_WIDTH 20
 #define ENEMY_HEIGHT 20
@@ -26,8 +28,8 @@
 
 bool init(SDL_Window **window, SDL_Renderer **renderer);
 void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active);
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, float dt, bool *running);
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active);
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float dt, bool *running);
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer);
 
 #endif

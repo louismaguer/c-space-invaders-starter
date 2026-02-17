@@ -20,10 +20,15 @@ int main(void){
         .w = PLAYER_WIDTH,
         .h = PLAYER_HEIGHT,
         .vx = 0,
-        .vy = 0};
+        .vy = 0,
+        .hp = INITIAL_HP};
 
     Entity bullet = {0};
     bool bullet_active = false;
+
+    Entity bullet_enemies = {0};
+    bool bullet_enemies_active = false;
+    float time_since_last_shot = 0;
 
     size_t enemies_count = ENEMIES_NUMBER;
     Entity enemies[ENEMIES_NUMBER];
@@ -48,11 +53,13 @@ int main(void){
             dt = 0.05f;
         last_ticks = ticks;
 
+        time_since_last_shot += dt;
+
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, dt, &running);
-        render(renderer, &player, enemies, &bullet, bullet_active);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &time_since_last_shot, dt, &running);
+        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active);
     }
 
     cleanup(window, renderer);
