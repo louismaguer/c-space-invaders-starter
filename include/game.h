@@ -32,11 +32,17 @@
 #define BAR_HEIGHT 25
 #define BAR_DISTANCE_TOP 25
 
+#define HEART_WIDTH 20
+#define HEARTH_HEIGHT 20
+#define TIME_BETWEEN_HEART_ATTEMPTS 2.5f
+#define HEART_CHANCE 0.5
+#define HEART_SPEED 100.0f
+
 
 bool init(SDL_Window **window, SDL_Renderer **renderer);
 void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active);
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float *time_since_last_acceleration, float dt, bool *running);
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active);
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running);
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer);
 
 #endif

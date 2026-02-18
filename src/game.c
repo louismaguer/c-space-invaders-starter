@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, float *time_since_last_shot, float *time_since_last_acceleration, float dt, bool *running){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -73,6 +73,34 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         *time_since_last_acceleration = 0;
         for (size_t i=0; i<ENEMIES_NUMBER; i++){
             enemies[i].vy += SPEED_INCREMENT;
+        }
+    }
+
+
+    if (*time_since_last_heart_attempt >= TIME_BETWEEN_HEART_ATTEMPTS && !*heart_active){
+        *time_since_last_heart_attempt = 0;
+        if ((float)rand()/RAND_MAX <= HEART_CHANCE){
+            *heart_active = true;
+            heart->x = rand() % (SCREEN_WIDTH - HEART_WIDTH);
+            heart->y = rand() % (SCREEN_HEIGHT - 60 - HEARTH_HEIGHT);
+            heart->w = HEART_WIDTH;
+            heart->h = HEARTH_HEIGHT;
+            heart->vy = HEART_SPEED;
+        }
+    }
+
+    if (*heart_active){
+        heart->y += HEART_SPEED*dt;
+        SDL_Rect * heart_rect = &(heart->rect);
+        SDL_Rect * player_rect = &(player->rect);
+        if (SDL_HasIntersection(heart_rect, player_rect)){
+            if (player->hp < MAX_HP){
+                player->hp += 1;
+            }
+            *heart_active = false;
+        }
+        if (heart->y > SCREEN_HEIGHT){
+            *heart_active = false;
         }
     }
                 
@@ -139,7 +167,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active){
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -159,6 +187,15 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
             SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
             SDL_RenderFillRect(renderer, &enemy_rect);
         }
+    }
+
+    if (heart_active){
+        SDL_Rect heart_rect = {
+            (int)heart->x, (int)heart->y,
+            heart->w, heart->h};
+        heart->rect = heart_rect;
+        SDL_SetRenderDrawColor(renderer, 133, 6, 6, 255);
+        SDL_RenderFillRect(renderer, &heart_rect);
     }
 
     if (bullet_active){

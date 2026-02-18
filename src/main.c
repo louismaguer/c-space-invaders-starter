@@ -11,6 +11,8 @@ int main(void){
         return 1;
     }
 
+    srand(time(NULL));
+
     bool running = true;
     Uint32 last_ticks = SDL_GetTicks();
 
@@ -29,6 +31,10 @@ int main(void){
     Entity bullet_enemies = {0};
     bool bullet_enemies_active = false;
     float time_since_last_shot = 0;
+
+    Entity heart = {0};
+    bool heart_active = false;
+    float time_since_last_heart_attempt = 0;
 
     size_t enemies_count = ENEMIES_NUMBER;
     Entity enemies[ENEMIES_NUMBER];
@@ -57,12 +63,13 @@ int main(void){
 
         time_since_last_shot += dt;
         time_since_last_acceleration += dt;
+        time_since_last_heart_attempt += dt;
 
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &time_since_last_shot, &time_since_last_acceleration, dt, &running);
-        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running);
+        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active);
     }
 
     cleanup(window, renderer);
