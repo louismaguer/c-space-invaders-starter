@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -117,8 +117,11 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             SDL_Rect * bullet_rect = &(bullet->rect);
             SDL_Rect * enemy_rect = &(enemies[i].rect);
             if (enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
-                enemies[i].alive = false;
-                *enemies_count -= 1;
+                enemies[i].hp -= 1;
+                if (enemies[i].hp == 0){
+                    enemies[i].alive = false;
+                    *enemies_count -= 1;
+                }
                 *bullet_active = false;
                 break;
             }
@@ -144,25 +147,50 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         printf("DÉFAITE...");
     }
 
-    if (*time_since_last_shot >= TIME_BETWEEN_SHOTS && !*bullet_enemies_active){
-        size_t index_alive[*enemies_count];
-        size_t alive_count = 0;
-        for (size_t i=0; i<ENEMIES_NUMBER; i++){
-            if (enemies[i].alive){
-                index_alive[alive_count] = i;
-                alive_count++;
+    if (*time_since_last_shot >= TIME_BETWEEN_SHOTS/2.0f && !*bullet_enemies_active){
+        if (*next_is_shooting_enemy && *shooting_enemies_count > 0){
+            size_t shooting_enemies_index[*enemies_count];
+            size_t shooting_enemies_count_aux = 0;
+            for (size_t i=0; i<ENEMIES_NUMBER; i++){
+                if (enemies[i].alive && enemies[i].enemy_type == SHOOTING_ENEMY){
+                    shooting_enemies_index[shooting_enemies_count_aux] = i;
+                    shooting_enemies_count_aux++;
+                }
             }
+            if(shooting_enemies_count_aux > 0){
+                size_t index_aux_shooting_enemy = rand() % shooting_enemies_count_aux;
+                size_t index_shooting_enemy = shooting_enemies_index[index_aux_shooting_enemy];
+                *bullet_enemies_active = true;
+                bullet_enemies->x = enemies[index_shooting_enemy].x + enemies[index_shooting_enemy].w / 2 - BULLET_WIDTH / 2;
+                bullet_enemies->y = enemies[index_shooting_enemy].y;
+                bullet_enemies->w = BULLET_WIDTH;
+                bullet_enemies->h = BULLET_HEIGHT;
+                bullet_enemies->vy = BULLET_SPEED;
+            }
+            *shooting_enemies_count = shooting_enemies_count_aux;
+            *next_is_shooting_enemy = false;
         }
-        if(alive_count > 0){
-            size_t index_aux_enemy = rand() % alive_count;
-            size_t index_enemy = index_alive[index_aux_enemy];
-        *time_since_last_shot = 0;
-        *bullet_enemies_active = true;
-        bullet_enemies->x = enemies[index_enemy].x + enemies[index_enemy].w / 2 - BULLET_WIDTH / 2;
-        bullet_enemies->y = enemies[index_enemy].y;
-        bullet_enemies->w = BULLET_WIDTH;
-        bullet_enemies->h = BULLET_HEIGHT;
-        bullet_enemies->vy = BULLET_SPEED;
+        if (*time_since_last_shot >= TIME_BETWEEN_SHOTS){
+            size_t index_alive[*enemies_count];
+            size_t alive_count = 0;
+            for (size_t i=0; i<ENEMIES_NUMBER; i++){
+                if (enemies[i].alive){
+                    index_alive[alive_count] = i;
+                    alive_count++;
+                }
+            }
+            if(alive_count > 0){
+                size_t index_aux_enemy = rand() % alive_count;
+                size_t index_enemy = index_alive[index_aux_enemy];
+                *time_since_last_shot = 0;
+                *next_is_shooting_enemy = true;
+                *bullet_enemies_active = true;
+                bullet_enemies->x = enemies[index_enemy].x + enemies[index_enemy].w / 2 - BULLET_WIDTH / 2;
+                bullet_enemies->y = enemies[index_enemy].y;
+                bullet_enemies->w = BULLET_WIDTH;
+                bullet_enemies->h = BULLET_HEIGHT;
+                bullet_enemies->vy = BULLET_SPEED;
+            }
         }
     }
 }
@@ -184,7 +212,20 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
                 (int)enemies[i].x, (int)enemies[i].y,
                 enemies[i].w, enemies[i].h};
             enemies[i].rect = enemy_rect;
-            SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+            switch (enemies[i].enemy_type){
+                case BASIC_ENEMY:
+                    SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+                    break;
+                case FAST_ENEMY:
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                    break;
+                case TOUGH_ENEMY:
+                    SDL_SetRenderDrawColor(renderer, 0, 100, 255, 255);
+                    break;
+                case SHOOTING_ENEMY:
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                    break;
+            }
             SDL_RenderFillRect(renderer, &enemy_rect);
         }
     }

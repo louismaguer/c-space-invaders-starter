@@ -49,41 +49,45 @@ int main(void){
                 .w = ENEMY_WIDTH,
                 .h = ENEMY_HEIGHT,
                 .vx = 0,
-                .vy = ENEMY_SPEED};
+                .vy = ENEMY_SPEED,
+                .hp = 1};
         }
     }
 
 // Selection of fast enemies
-size_t i = FAST_ENEMIES_NUMBER;
-while (i > 0){
-    int s = rand() % ENEMIES_NUMBER;
-    if (enemies[s].enemy_type == BASIC_ENEMY){
-        enemies[s].enemy_type = FAST_ENEMY;
-        enemies[s].vy *= FAST_ENEMY_SPEED_MULTPLIER;
-        i--;
+size_t f = FAST_ENEMIES_NUMBER;
+while (f > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = FAST_ENEMY;
+        enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
+        f--;
     }
 }
 
 // Selection of tough enemies
-size_t i = TOUGH_ENEMIES_NUMBER;
-while (i > 0){
-    int s = rand() % ENEMIES_NUMBER;
-    if (enemies[s].enemy_type == BASIC_ENEMY){
-        enemies[s].enemy_type = TOUGH_ENEMY;
-        enemies[s].hp = TOUGH_ENEMY_HP;
-        i--;
+size_t t = TOUGH_ENEMIES_NUMBER;
+while (t > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = TOUGH_ENEMY;
+        enemies[c].hp = TOUGH_ENEMY_HP;
+        t--;
     }
 }
 
 // Selection of shooting enemies
-size_t i = SHOOTING_ENEMIES_NUMBER;
-while (i > 0){
-    int s = rand() % ENEMIES_NUMBER;
-    if (enemies[s].enemy_type == BASIC_ENEMY){
-        enemies[s].enemy_type = SHOOTING_ENEMY;
-        i--;
+size_t s = SHOOTING_ENEMIES_NUMBER;
+while (s > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = SHOOTING_ENEMY;
+        s--;
     }
 }
+
+    size_t shooting_enemies_count = SHOOTING_ENEMIES_NUMBER;
+    bool next_is_shooting_enemy = true;
 
     float time_since_last_acceleration = 0;
 
@@ -101,7 +105,7 @@ while (i > 0){
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running);
         render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active);
     }
 
