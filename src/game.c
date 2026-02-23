@@ -116,8 +116,8 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         if (enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
             if (enemies[i].y > SCREEN_HEIGHT - 60){
+                *game_state = DEFEAT;
                 *running = false;
-                printf("DÉFAITE...");
                 break;
             }
         }
@@ -136,8 +136,8 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 
     if (*enemies_count == 0){
+        *game_state = VICTORY;
         *running = false;
-        printf("VICTOIRE !");
     }
 
     if (*bullet_enemies_active){
@@ -150,8 +150,8 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
     
     if (player->hp == 0){
+        *game_state = DEFEAT;
         *running = false;
-        printf("DÉFAITE...");
     }
 
     if (*time_since_last_shot >= TIME_BETWEEN_SHOTS/2.0f && !*bullet_enemies_active){
@@ -276,6 +276,14 @@ SDL_RenderFillRect(renderer, &hp_rect);
 SDL_Rect outline_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, BAR_WIDTH, BAR_HEIGHT};
 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 SDL_RenderDrawRect(renderer, &outline_rect);
+
+if (*game_state == VICTORY){
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "VICTOIRE !", "", SDL_RenderGetWindow(renderer));
+}
+
+if (*game_state == DEFEAT){
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "DÉFAITE...", "", SDL_RenderGetWindow(renderer));
+}
 
 SDL_RenderPresent(renderer);
 }
