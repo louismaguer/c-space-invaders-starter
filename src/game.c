@@ -63,6 +63,10 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *bullet_active = false;
     }
 
+    if (!*bullet_active){
+        *bullet = (Entity){0};
+    }
+
     if (*bullet_enemies_active){
         bullet_enemies->y += bullet_enemies->vy * dt;
         if (bullet_enemies->y + bullet_enemies->h > SCREEN_HEIGHT)
