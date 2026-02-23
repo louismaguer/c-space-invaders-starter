@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -76,7 +76,12 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     if (*time_since_last_acceleration >= TIME_BETWEEN_ACCELERATIONS){
         *time_since_last_acceleration = 0;
         for (size_t i=0; i<ENEMIES_NUMBER; i++){
-            enemies[i].vy += SPEED_INCREMENT;
+            if (enemies[i].enemy_type == FAST_ENEMY){
+                enemies[i].vy += FAST_ENEMY_SPEED_MULTPLIER * SPEED_INCREMENT;
+            }
+            else {
+                enemies[i].vy += SPEED_INCREMENT;
+            }
         }
     }
 
@@ -197,7 +202,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active){
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -221,9 +226,12 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
                 case FAST_ENEMY:
                     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                     break;
-                case TOUGH_ENEMY:
-                    SDL_SetRenderDrawColor(renderer, 0, 100, 255, 255);
+                case TOUGH_ENEMY: {
+                    float alpha = ((float)enemies[i].hp/TOUGH_ENEMY_HP) * 255;
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    SDL_SetRenderDrawColor(renderer, 0, 100, 255, alpha);
                     break;
+                    }
                 case SHOOTING_ENEMY:
                     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                     break;
@@ -255,7 +263,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
             (int)bullet_enemies->x, (int)bullet_enemies->y,
             bullet_enemies->w, bullet_enemies->h};
         bullet_enemies->rect = bullet_enemies_rect;
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 100, 0, 255);
         SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
 

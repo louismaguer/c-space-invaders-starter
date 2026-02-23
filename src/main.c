@@ -91,6 +91,9 @@ while (s > 0){
 
     float time_since_last_acceleration = 0;
 
+
+    Game_States game_state = RUNNING;
+
     while (running){
         Uint32 ticks = SDL_GetTicks();
         float dt = (ticks - last_ticks) / 1000.0f;
@@ -105,8 +108,8 @@ while (s > 0){
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running);
-        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state);
+        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active, &game_state);
     }
 
     cleanup(window, renderer);
