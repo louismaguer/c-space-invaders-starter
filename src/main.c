@@ -42,6 +42,7 @@ int main(void){
     for (size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
         for (size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
             enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
+                .enemy_type = BASIC_ENEMY,
                 .alive = true,
                 .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,
                 .y = SCREEN_HEIGHT/(2*ENEMIES_NUMBER_PER_COLUMN) * i,
@@ -51,6 +52,38 @@ int main(void){
                 .vy = ENEMY_SPEED};
         }
     }
+
+// Selection of fast enemies
+size_t i = FAST_ENEMIES_NUMBER;
+while (i > 0){
+    int s = rand() % ENEMIES_NUMBER;
+    if (enemies[s].enemy_type == BASIC_ENEMY){
+        enemies[s].enemy_type = FAST_ENEMY;
+        enemies[s].vy *= FAST_ENEMY_SPEED_MULTPLIER;
+        i--;
+    }
+}
+
+// Selection of tough enemies
+size_t i = TOUGH_ENEMIES_NUMBER;
+while (i > 0){
+    int s = rand() % ENEMIES_NUMBER;
+    if (enemies[s].enemy_type == BASIC_ENEMY){
+        enemies[s].enemy_type = TOUGH_ENEMY;
+        enemies[s].hp = TOUGH_ENEMY_HP;
+        i--;
+    }
+}
+
+// Selection of shooting enemies
+size_t i = SHOOTING_ENEMIES_NUMBER;
+while (i > 0){
+    int s = rand() % ENEMIES_NUMBER;
+    if (enemies[s].enemy_type == BASIC_ENEMY){
+        enemies[s].enemy_type = SHOOTING_ENEMY;
+        i--;
+    }
+}
 
     float time_since_last_acceleration = 0;
 
