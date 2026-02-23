@@ -76,7 +76,6 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         }
     }
 
-
     if (*time_since_last_heart_attempt >= TIME_BETWEEN_HEART_ATTEMPTS && !*heart_active){
         *time_since_last_heart_attempt = 0;
         if ((float)rand()/RAND_MAX <= HEART_CHANCE){
@@ -123,7 +122,6 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
                     *enemies_count -= 1;
                 }
                 *bullet_active = false;
-                break;
             }
         }
     }
