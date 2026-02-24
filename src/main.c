@@ -98,11 +98,11 @@ size_t enemies_number_tot = ENEMIES_NUMBER;
 bool reset_game = false;
 
 while (game_state == MENU){
-    int choice = menu(window);
+    int choice = menu(window, &level);
     if (choice == 0){
         level = 1;
         game_state = RUNNING;
-    } 
+    }
     else if (choice == 1){
         switch(load_game(&level)){
             case 2:

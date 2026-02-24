@@ -293,11 +293,13 @@ if (*game_state == VICTORY){
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Niveau suivant"},
         {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
     };
+    char victory[50];
+    snprintf(victory, sizeof(victory), "Niveau %zu", *level);
     const SDL_MessageBoxData data = {
         SDL_MESSAGEBOX_INFORMATION,
         SDL_RenderGetWindow(renderer),
         "VICTOIRE !",
-        "",
+        victory,
         SDL_arraysize(buttons),
         buttons,
         NULL
@@ -318,13 +320,15 @@ if (*game_state == VICTORY){
 if (*game_state == DEFEAT){
     const SDL_MessageBoxButtonData buttons[] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Recommencer le niveau"},
-        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Quitter"},
     };
+    char defeat[50];
+    snprintf(defeat, sizeof(defeat), "Niveau %zu", *level);
     const SDL_MessageBoxData data = {
         SDL_MESSAGEBOX_INFORMATION,
         SDL_RenderGetWindow(renderer),
         "DÉFAITE...",
-        "",
+        defeat,
         SDL_arraysize(buttons),
         buttons,
         NULL
@@ -332,11 +336,9 @@ if (*game_state == DEFEAT){
     int buttonid;
     SDL_ShowMessageBox(&data, &buttonid);
     if (buttonid == 0){
-        save_game(*level);
         *reset_game = true;
     } 
     else{
-        save_game(*level);
         *running = false;
     }
 }
@@ -346,11 +348,13 @@ if (*game_state == PAUSE){
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Reprendre"},
         {0, 1, "Quitter"},
     };
+    char pause[50];
+    snprintf(pause, sizeof(pause), "Niveau %zu", *level);
     const SDL_MessageBoxData data = {
         SDL_MESSAGEBOX_INFORMATION,
         SDL_RenderGetWindow(renderer),
         "PAUSE",
-        "",
+        pause,
         SDL_arraysize(buttons),
         buttons,
         NULL
@@ -368,17 +372,24 @@ if (*game_state == PAUSE){
 SDL_RenderPresent(renderer);
 }
 
-int menu(SDL_Window *window){
+int menu(SDL_Window *window, size_t *level){
     const SDL_MessageBoxButtonData buttons[] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Nouvelle partie"},
-        {0, 1, "Charger une sauvegarde"},
+        {0, 1, "Continuer"},
         {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Quitter"},
     };
+    char menu[50];
+    if(load_game(level) == 2){
+        snprintf(menu, sizeof(menu), "Partie sauvegardée au niveau %zu", *level);
+    }
+    else{
+        snprintf(menu, sizeof(menu), "", NULL);
+    }
     const SDL_MessageBoxData messageboxdata = {
         SDL_MESSAGEBOX_INFORMATION,
         window,
         "MENU",
-        "",
+        menu,
         SDL_arraysize(buttons),
         buttons,
         NULL
