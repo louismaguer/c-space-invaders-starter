@@ -2,3 +2,4 @@ space_invaders
 build 
 .vscode
 save.txt
+.DS_Store
