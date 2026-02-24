@@ -117,7 +117,9 @@ while (game_state == MENU){
         }
     }
     else{
-            running = false;
+        running = false;
+        cleanup(window, renderer);
+        return 0;
     }
 }
 

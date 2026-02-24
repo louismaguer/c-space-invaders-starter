@@ -136,8 +136,6 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*enemies_count == 0){
         *game_state = VICTORY;
-        (*level)++;
-        save_game(*level);
     }
 
     if (*bullet_enemies_active){
@@ -298,7 +296,9 @@ if (*game_state == VICTORY){
         *reset_game = true;
     } 
     else {
+        printf("%zu", *level);
         (*level)++;
+        printf("%zu", *level);
         save_game(*level);
         *running = false;
     }}
@@ -402,13 +402,13 @@ void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bulle
     *heart_active = false;
     *time_since_last_heart_attempt = 0;
 
-    size_t enemies_number_col = ENEMIES_NUMBER_PER_COLUMN + (*level/2);
-    size_t enemies_number_lin = ENEMIES_NUMBER_PER_LINE + ((*level-1)/2);
+    size_t enemies_number_col = ENEMIES_NUMBER_PER_COLUMN + ((*level-1)/2);
+    size_t enemies_number_lin = ENEMIES_NUMBER_PER_LINE + (*level/2);
     *enemies_number_tot = enemies_number_col*enemies_number_lin;
 
     *enemies_count = *enemies_number_tot;
-    printf("%d", player->hp);
-    printf("%zu", *enemies_count);
+
+    float enemy_speed_updated = ENEMY_SPEED*(1+(float)(*level-1)/10.0f);
 
     for (size_t i=0; i<enemies_number_col; i++){
         for (size_t j=0; j<enemies_number_lin; j++){
@@ -420,7 +420,7 @@ void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bulle
                 .w = ENEMY_WIDTH,
                 .h = ENEMY_HEIGHT,
                 .vx = 0,
-                .vy = ENEMY_SPEED*(1+(*level)/10),
+                .vy = enemy_speed_updated,
                 .hp = 1};
         }
     }
