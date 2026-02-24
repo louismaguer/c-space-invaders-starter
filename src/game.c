@@ -2,6 +2,7 @@
 #include "game.h"
 #include <stdio.h>
 
+// Vérification de l'initialisation la console
 bool init(SDL_Window **window, SDL_Renderer **renderer){
     if (SDL_Init(SDL_INIT_VIDEO) != 0){
         SDL_Log("Erreur SDL_Init: %s", SDL_GetError());
@@ -26,6 +27,7 @@ bool init(SDL_Window **window, SDL_Renderer **renderer){
     return true;
 }
 
+// Traitement des touches pressées
 void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active, Game_States *game_state){
     SDL_Event event;
     while (SDL_PollEvent(&event)){
@@ -53,6 +55,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
+// Mise à jour de la partie
 void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
     player->x += player->vx * dt;
 
@@ -78,6 +81,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *bullet_enemies_active = false;
     }
 
+    // Accélération progressive des ennemis
     if (*time_since_last_acceleration >= TIME_BETWEEN_ACCELERATIONS){
         *time_since_last_acceleration = 0;
         for (size_t i=0; i<*enemies_number_tot; i++){
@@ -90,6 +94,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         }
     }
 
+    // Apparation pseudo-aléatoire et mécanique des cœurs
     if (*time_since_last_heart_attempt >= TIME_BETWEEN_HEART_ATTEMPTS && !*heart_active){
         *time_since_last_heart_attempt = 0;
         if ((float)rand()/RAND_MAX <= HEART_CHANCE){
@@ -117,6 +122,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         }
     }
 
+    // Attribution des différents "Rect"
     SDL_Rect player_rect = {
         (int)player->x, (int)player->y,
         player->w, player->h};
@@ -144,6 +150,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         bullet_enemies->w, bullet_enemies->h};
         bullet_enemies->rect = bullet_enemies_rect;
 
+    // Impact de la balle du joueur sur les ennemis
     for (size_t i=0; i<*enemies_number_tot; i++){
         if (enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
@@ -169,6 +176,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         *game_state = VICTORY;
     }
 
+    // Impact de la balle des ennemis sur le joueur
     if (*bullet_enemies_active){
         if (SDL_HasIntersection(&bullet_enemies_rect, &player_rect)){
             *bullet_enemies_active = false;
@@ -180,7 +188,9 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         *game_state = DEFEAT;
     }
 
+    // Tir des ennemis
     if (*time_since_last_shot >= TIME_BETWEEN_SHOTS/2.0f && !*bullet_enemies_active){
+        // Les ennemis tirant plus fréquemment tirent une balle supplémentaire dans l'intervalle entre deux tirs "réguliers"
         if (*next_is_shooting_enemy && *shooting_enemies_count > 0){
             size_t shooting_enemies_index[ENEMIES_NUMBER*100];
             size_t shooting_enemies_count_aux = 0;
@@ -228,6 +238,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
+// Affichage des entités
 void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game, size_t *enemies_number_tot){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -278,100 +289,102 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
         SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
 
-int progression = (int)(((float)player->hp/MAX_HP)*BAR_WIDTH);
+    int progression = (int)(((float)player->hp/MAX_HP)*BAR_WIDTH);
+    SDL_Rect hp_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, progression, BAR_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); 
+    SDL_RenderFillRect(renderer, &hp_rect);
+    SDL_Rect outline_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, BAR_WIDTH, BAR_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &outline_rect);
 
-SDL_Rect hp_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, progression, BAR_HEIGHT};
-SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); 
-SDL_RenderFillRect(renderer, &hp_rect);
+    // Affichage du menu contextuel en cas de victoire
+    if (*game_state == VICTORY){
+        const SDL_MessageBoxButtonData buttons[] = {
+            {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Niveau suivant"},
+            {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
+        };
+        char victory[50];
+        snprintf(victory, sizeof(victory), "Niveau %zu", *level);
+        const SDL_MessageBoxData data = {
+            SDL_MESSAGEBOX_INFORMATION,
+            SDL_RenderGetWindow(renderer),
+            "VICTOIRE !",
+            victory,
+            SDL_arraysize(buttons),
+            buttons,
+            NULL
+        };
+        int buttonid;
+        SDL_ShowMessageBox(&data, &buttonid);
+        if (buttonid == 0){
+            (*level)++;
+            save_game(*level);
+            *reset_game = true;
+        } 
+        else{
+            (*level)++;
+            save_game(*level);
+            *running = false;
+        }}
 
-SDL_Rect outline_rect = {(SCREEN_WIDTH - BAR_WIDTH)/2, BAR_DISTANCE_TOP, BAR_WIDTH, BAR_HEIGHT};
-SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-SDL_RenderDrawRect(renderer, &outline_rect);
-
-if (*game_state == VICTORY){
-    const SDL_MessageBoxButtonData buttons[] = {
-        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Niveau suivant"},
-        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
-    };
-    char victory[50];
-    snprintf(victory, sizeof(victory), "Niveau %zu", *level);
-    const SDL_MessageBoxData data = {
-        SDL_MESSAGEBOX_INFORMATION,
-        SDL_RenderGetWindow(renderer),
-        "VICTOIRE !",
-        victory,
-        SDL_arraysize(buttons),
-        buttons,
-        NULL
-    };
-    int buttonid;
-    SDL_ShowMessageBox(&data, &buttonid);
-    if (buttonid == 0){
-        (*level)++;
-        save_game(*level);
-        *reset_game = true;
-    } 
-    else{
-        (*level)++;
-        save_game(*level);
-        *running = false;
-    }}
-
-if (*game_state == DEFEAT){
-    const SDL_MessageBoxButtonData buttons[] = {
-        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Recommencer le niveau"},
-        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Quitter"},
-    };
-    char defeat[50];
-    snprintf(defeat, sizeof(defeat), "Niveau %zu", *level);
-    const SDL_MessageBoxData data = {
-        SDL_MESSAGEBOX_INFORMATION,
-        SDL_RenderGetWindow(renderer),
-        "DÉFAITE...",
-        defeat,
-        SDL_arraysize(buttons),
-        buttons,
-        NULL
-    };
-    int buttonid;
-    SDL_ShowMessageBox(&data, &buttonid);
-    if (buttonid == 0){
-        *reset_game = true;
-    } 
-    else{
-        *running = false;
+    // Affichage du menu contextuel en cas de défaite
+    if (*game_state == DEFEAT){
+        const SDL_MessageBoxButtonData buttons[] = {
+            {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Recommencer le niveau"},
+            {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Quitter"},
+        };
+        char defeat[50];
+        snprintf(defeat, sizeof(defeat), "Niveau %zu", *level);
+        const SDL_MessageBoxData data = {
+            SDL_MESSAGEBOX_INFORMATION,
+            SDL_RenderGetWindow(renderer),
+            "DÉFAITE...",
+            defeat,
+            SDL_arraysize(buttons),
+            buttons,
+            NULL
+        };
+        int buttonid;
+        SDL_ShowMessageBox(&data, &buttonid);
+        if (buttonid == 0){
+            *reset_game = true;
+        } 
+        else{
+            *running = false;
+        }
     }
+
+    // Affichage du menu contextuel en cas de pause
+    if (*game_state == PAUSE){
+        const SDL_MessageBoxButtonData buttons[] = {
+            {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Reprendre"},
+            {0, 1, "Quitter"},
+        };
+        char pause[50];
+        snprintf(pause, sizeof(pause), "Niveau %zu", *level);
+        const SDL_MessageBoxData data = {
+            SDL_MESSAGEBOX_INFORMATION,
+            SDL_RenderGetWindow(renderer),
+            "PAUSE",
+            pause,
+            SDL_arraysize(buttons),
+            buttons,
+            NULL
+        };
+        int buttonid;
+        SDL_ShowMessageBox(&data, &buttonid);
+        if (buttonid == 0){
+            *game_state = RUNNING;
+        }
+        else{
+            *running = false;
+        }
+    }
+
+    SDL_RenderPresent(renderer);
 }
 
-if (*game_state == PAUSE){
-    const SDL_MessageBoxButtonData buttons[] = {
-        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Reprendre"},
-        {0, 1, "Quitter"},
-    };
-    char pause[50];
-    snprintf(pause, sizeof(pause), "Niveau %zu", *level);
-    const SDL_MessageBoxData data = {
-        SDL_MESSAGEBOX_INFORMATION,
-        SDL_RenderGetWindow(renderer),
-        "PAUSE",
-        pause,
-        SDL_arraysize(buttons),
-        buttons,
-        NULL
-    };
-    int buttonid;
-    SDL_ShowMessageBox(&data, &buttonid);
-    if (buttonid == 0){
-        *game_state = RUNNING;
-    }
-    else{
-        *running = false;
-    }
-}
-
-SDL_RenderPresent(renderer);
-}
-
+// Paramétrage du menu de démarrage
 int menu(SDL_Window *window, size_t *level){
     const SDL_MessageBoxButtonData buttons[] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Nouvelle partie"},
@@ -399,35 +412,8 @@ int menu(SDL_Window *window, size_t *level){
     return buttonid;
 }
 
-void cleanup(SDL_Window *window, SDL_Renderer *renderer){
-    if (renderer)
-        SDL_DestroyRenderer(renderer);
-    if (window)
-        SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-void save_game(size_t level){
-    FILE *file = fopen("save.txt", "w");
-    fprintf(file, "%zu", level);
-    fclose(file);
-}
-
-int load_game(size_t *level){
-    FILE *file = fopen("save.txt", "r");
-    if (file == NULL){
-        return 0;
-    }
-    else if (fscanf(file, "%zu", level) != 1){
-        fclose(file);
-        return 1;
-    }
-    else {
-        fscanf(file, "%zu", level);
-        fclose(file);
-        return 2;
-    }
-}
-
+// Initialisation d'une partie de niveau quelconque
+// On reprend essentiellement le code de l'initialisation au niveau 1, en modifiant le nombre d'ennemis et leur vitesse
 void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
     *player = (Entity){
         .x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2,
@@ -449,13 +435,17 @@ void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bulle
     *heart_active = false;
     *time_since_last_heart_attempt = 0;
 
+    // Mise à jour du nombre d'ennemis
     size_t enemies_number_col = ENEMIES_NUMBER_PER_COLUMN + ((*level-1)/2);
     size_t enemies_number_lin = ENEMIES_NUMBER_PER_LINE + (*level/2);
     *enemies_number_tot = enemies_number_col*enemies_number_lin;
 
     *enemies_count = *enemies_number_tot;
 
+    // Mise à jour de la vitesse des ennemis
     float enemy_speed_updated = ENEMY_SPEED*(1+(float)(*level-1)/10.0f);
+
+    *time_since_last_acceleration = 0;
 
     for (size_t i=0; i<enemies_number_col; i++){
         for (size_t j=0; j<enemies_number_lin; j++){
@@ -472,44 +462,73 @@ void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bulle
         }
     }
 
-size_t fast_enemies_nb = (int)(*enemies_number_tot*FAST_ENEMIES_RATIO);
-size_t tough_enemies_nb = (int)(*enemies_number_tot*TOUGH_ENEMIES_RATIO);
-size_t shooting_enemies_nb = (int)(*enemies_number_tot*SHOOTING_ENEMIES_RATIO);
+    size_t fast_enemies_nb = (int)(*enemies_number_tot*FAST_ENEMIES_RATIO);
+    size_t tough_enemies_nb = (int)(*enemies_number_tot*TOUGH_ENEMIES_RATIO);
+    size_t shooting_enemies_nb = (int)(*enemies_number_tot*SHOOTING_ENEMIES_RATIO);
 
-// Selection of fast enemies
-size_t f = fast_enemies_nb;
-while (f > 0){
-    int c = rand() % *enemies_number_tot;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = FAST_ENEMY;
-        enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
-        f--;
+    size_t f = fast_enemies_nb;
+    while (f > 0){
+        int c = rand() % *enemies_number_tot;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = FAST_ENEMY;
+            enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
+            f--;
+        }
+    }
+
+    size_t t = tough_enemies_nb;
+    while (t > 0){
+        int c = rand() % *enemies_number_tot;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = TOUGH_ENEMY;
+            enemies[c].hp = TOUGH_ENEMY_HP;
+            t--;
+        }
+    }
+
+    size_t s = shooting_enemies_nb;
+    while (s > 0){
+        int c = rand() % *enemies_number_tot;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = SHOOTING_ENEMY;
+            s--;
+        }
+    }
+
+        *shooting_enemies_count = shooting_enemies_nb;
+        *next_is_shooting_enemy = true;
+}
+
+// Sauvegarde du jeu
+void save_game(size_t level){
+    FILE *file = fopen("save.txt", "w");
+    fprintf(file, "%zu", level);
+    fclose(file);
+}
+
+// Chargement d'une sauvegarde
+// La sauvegarde est enregistrée sous la forme d'un fichier "save.txt", qui est donc accessible dans le dossier de travail
+int load_game(size_t *level){
+    FILE *file = fopen("save.txt", "r");
+    if (file == NULL){
+        return 0;
+    }
+    else if (fscanf(file, "%zu", level) != 1){
+        fclose(file);
+        return 1;
+    }
+    else {
+        fscanf(file, "%zu", level);
+        fclose(file);
+        return 2;
     }
 }
 
-// Selection of tough enemies
-size_t t = tough_enemies_nb;
-while (t > 0){
-    int c = rand() % *enemies_number_tot;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = TOUGH_ENEMY;
-        enemies[c].hp = TOUGH_ENEMY_HP;
-        t--;
-    }
-}
-
-// Selection of shooting enemies
-size_t s = shooting_enemies_nb;
-while (s > 0){
-    int c = rand() % *enemies_number_tot;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = SHOOTING_ENEMY;
-        s--;
-    }
-}
-
-    *shooting_enemies_count = shooting_enemies_nb;
-    *next_is_shooting_enemy = true;
-
-    *time_since_last_acceleration = 0;
+// Fermeture de la console
+void cleanup(SDL_Window *window, SDL_Renderer *renderer){
+    if (renderer)
+        SDL_DestroyRenderer(renderer);
+    if (window)
+        SDL_DestroyWindow(window);
+    SDL_Quit();
 }

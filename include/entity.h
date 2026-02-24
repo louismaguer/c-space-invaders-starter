@@ -1,6 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+// Définition des types d'ennemis
 typedef enum{
     BASIC_ENEMY,
     FAST_ENEMY,
@@ -8,6 +9,7 @@ typedef enum{
     SHOOTING_ENEMY
 } Enemy_Type;
 
+// Définition des entités
 typedef struct{
     Enemy_Type enemy_type;
     bool alive;

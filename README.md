@@ -25,6 +25,8 @@ Il existe plusieurs classes d'ennemis :
 
 Les cœurs sont représentés en magenta.
 
+On peut mettre le jeu en pause en pressant les touches ``Esc`` ou ``P``.
+
 ## Modification des paramètres
 
 On peut modifier les différents paramètres de base en modifiant le fichier `game.h`. En particulier, la vitesse des ennemis est paramétrable à travers les champs : 

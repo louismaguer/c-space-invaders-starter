@@ -4,6 +4,8 @@
 #include "game.h"
 
 int main(void){
+
+    // Initialisation de la console
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
@@ -16,6 +18,8 @@ int main(void){
     bool running = true;
     Uint32 last_ticks = SDL_GetTicks();
 
+    // Initialisation d'une partie de niveau 1
+    // Pourra être écrasée en cas de jeu d'une sauvegarde mais permet de définir les objets importants dans le "main"
     Entity player = {
         .x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2,
         .y = SCREEN_HEIGHT - 60,
@@ -37,6 +41,7 @@ int main(void){
     bool heart_active = false;
     float time_since_last_heart_attempt = 0;
 
+    size_t enemies_number_tot = ENEMIES_NUMBER;
     size_t enemies_count = ENEMIES_NUMBER;
     Entity enemies[ENEMIES_NUMBER*100];
 
@@ -55,75 +60,79 @@ int main(void){
         }
     }
 
-// Selection of fast enemies
-size_t f = FAST_ENEMIES_NUMBER;
-while (f > 0){
-    int c = rand() % ENEMIES_NUMBER;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = FAST_ENEMY;
-        enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
-        f--;
-    }
-}
+    float time_since_last_acceleration = 0;
 
-// Selection of tough enemies
-size_t t = TOUGH_ENEMIES_NUMBER;
-while (t > 0){
-    int c = rand() % ENEMIES_NUMBER;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = TOUGH_ENEMY;
-        enemies[c].hp = TOUGH_ENEMY_HP;
-        t--;
-    }
-}
-
-// Selection of shooting enemies
-size_t s = SHOOTING_ENEMIES_NUMBER;
-while (s > 0){
-    int c = rand() % ENEMIES_NUMBER;
-    if (enemies[c].enemy_type == BASIC_ENEMY){
-        enemies[c].enemy_type = SHOOTING_ENEMY;
-        s--;
-    }
-}
-
-size_t shooting_enemies_count = SHOOTING_ENEMIES_NUMBER;
-bool next_is_shooting_enemy = true;
-
-float time_since_last_acceleration = 0;
-
-Game_States game_state = MENU;
-size_t level = 1;
-size_t enemies_number_tot = ENEMIES_NUMBER;
-bool reset_game = false;
-
-while (game_state == MENU){
-    int choice = menu(window, &level);
-    if (choice == 0){
-        level = 1;
-        game_state = RUNNING;
-    }
-    else if (choice == 1){
-        switch(load_game(&level)){
-            case 2:
-                game_state = RUNNING;
-                reset_game = true;
-                break;
-            case 1:
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fichier de sauvegarde invalide", "", window);
-                break;
-            case 0:
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fichier de sauvegarde absent", "", window);
-                break;
+    // Sélection pseudo-aléatoire des ennemis rapides
+    size_t f = FAST_ENEMIES_NUMBER;
+    while (f > 0){
+        int c = rand() % ENEMIES_NUMBER;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = FAST_ENEMY;
+            enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
+            f--;
         }
     }
-    else{
-        running = false;
-        cleanup(window, renderer);
-        return 0;
-    }
-}
 
+    // Sélection pseudo-aléatoire des ennemis résistants
+    size_t t = TOUGH_ENEMIES_NUMBER;
+    while (t > 0){
+        int c = rand() % ENEMIES_NUMBER;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = TOUGH_ENEMY;
+            enemies[c].hp = TOUGH_ENEMY_HP;
+            t--;
+        }
+    }
+
+    // Sélection pseudo-aléatoire des ennemis tirant plus fréquemment
+    size_t s = SHOOTING_ENEMIES_NUMBER;
+    while (s > 0){
+        int c = rand() % ENEMIES_NUMBER;
+        if (enemies[c].enemy_type == BASIC_ENEMY){
+            enemies[c].enemy_type = SHOOTING_ENEMY;
+            s--;
+        }
+    }
+
+    // Préparation d'une mécanique spécifique de tir pour les ennemis tirant plus fréquemment
+    size_t shooting_enemies_count = SHOOTING_ENEMIES_NUMBER;
+    bool next_is_shooting_enemy = true;
+
+
+    // Mise en place des états du jeu
+    Game_States game_state = MENU;
+    size_t level = 1;
+    bool reset_game = false;
+
+    // Menu de démarrage
+    while (game_state == MENU){
+        int choice = menu(window, &level);
+        if (choice == 0){
+            level = 1;
+            game_state = RUNNING;
+        }
+        else if (choice == 1){
+            switch(load_game(&level)){
+                case 2:
+                    game_state = RUNNING;
+                    reset_game = true;
+                    break;
+                case 1:
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fichier de sauvegarde invalide", "", window);
+                    break;
+                case 0:
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fichier de sauvegarde absent", "", window);
+                    break;
+            }
+        }
+        else{
+            running = false;
+            cleanup(window, renderer);
+            return 0;
+        }
+    }
+
+    // Boucle courante jusqu'à l'arrêt du jeu
     while (running){
         Uint32 ticks = SDL_GetTicks();
         float dt = (ticks - last_ticks) / 1000.0f;
@@ -148,6 +157,7 @@ while (game_state == MENU){
         }
     }
 
+    // Fermeture "propre" de la console
     cleanup(window, renderer);
     return 0;
 }
