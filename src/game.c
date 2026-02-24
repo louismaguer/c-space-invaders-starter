@@ -56,7 +56,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
 }
 
 // Mise à jour de la partie
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, Game_States *game_state, size_t *enemies_number_tot){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -396,7 +396,7 @@ int menu(SDL_Window *window, size_t *level){
         snprintf(menu, sizeof(menu), "Partie sauvegardée au niveau %zu", *level);
     }
     else{
-        snprintf(menu, sizeof(menu), "", NULL);
+        snprintf(menu, sizeof(menu), "");
     }
     const SDL_MessageBoxData messageboxdata = {
         SDL_MESSAGEBOX_INFORMATION,
@@ -414,7 +414,7 @@ int menu(SDL_Window *window, size_t *level){
 
 // Initialisation d'une partie de niveau quelconque
 // On reprend essentiellement le code de l'initialisation au niveau 1, en modifiant le nombre d'ennemis et leur vitesse
-void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
+void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, size_t *level, size_t *enemies_number_tot){
     *player = (Entity){
         .x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2,
         .y = SCREEN_HEIGHT - 60,

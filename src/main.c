@@ -35,7 +35,6 @@ int main(void){
     Entity bullet_enemies = {0};
     bool bullet_enemies_active = false;
     float time_since_last_shot = 0;
-    float time_since_last_shot_player = 0;
 
     Entity heart = {0};
     bool heart_active = false;
@@ -143,15 +142,14 @@ int main(void){
         time_since_last_shot += dt;
         time_since_last_acceleration += dt;
         time_since_last_heart_attempt += dt;
-        time_since_last_shot_player += dt;
 
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active, &game_state);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level, &enemies_number_tot);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &game_state, &enemies_number_tot);
         render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active, &game_state, &running, &level, &reset_game, &enemies_number_tot);
         if (reset_game){
-            reset(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level, &enemies_number_tot);
+            reset(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, &level, &enemies_number_tot);
             reset_game = false;
             game_state = RUNNING;
         }
