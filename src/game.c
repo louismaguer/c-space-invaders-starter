@@ -262,7 +262,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
 
     if (heart_active){
         SDL_Rect heart_rect = heart->rect;
-        SDL_SetRenderDrawColor(renderer, 133, 6, 6, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
         SDL_RenderFillRect(renderer, &heart_rect);
     }
 
