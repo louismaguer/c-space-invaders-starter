@@ -26,7 +26,7 @@ bool init(SDL_Window **window, SDL_Renderer **renderer){
     return true;
 }
 
-void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active, float *time_since_last_shot_player){
+void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active, float *time_since_last_shot_player, Game_States *game_state){
     SDL_Event event;
     while (SDL_PollEvent(&event)){
         if (event.type == SDL_QUIT)
@@ -47,6 +47,10 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
         bullet->h = BULLET_HEIGHT;
         bullet->vy = -BULLET_SPEED;
         *time_since_last_shot_player = 0;
+    }
+
+    if(keys[SDL_SCANCODE_ESCAPE] || keys[SDL_SCANCODE_P]){
+        *game_state = PAUSE;
     }
 }
 
@@ -296,10 +300,8 @@ if (*game_state == VICTORY){
         save_game(*level);
         *reset_game = true;
     } 
-    else {
-        printf("%zu", *level);
+    else{
         (*level)++;
-        printf("%zu", *level);
         save_game(*level);
         *running = false;
     }}
@@ -324,8 +326,32 @@ if (*game_state == DEFEAT){
         save_game(*level);
         *reset_game = true;
     } 
-    else {
+    else{
         save_game(*level);
+        *running = false;
+    }
+}
+
+if (*game_state == PAUSE){
+    const SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Reprendre"},
+        {0, 1, "Quitter"},
+    };
+    const SDL_MessageBoxData data = {
+        SDL_MESSAGEBOX_INFORMATION,
+        SDL_RenderGetWindow(renderer),
+        "PAUSE",
+        "",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&data, &buttonid);
+    if (buttonid == 0){
+        *game_state = RUNNING;
+    }
+    else{
         *running = false;
     }
 }
