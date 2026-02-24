@@ -48,13 +48,19 @@
 typedef enum{
         RUNNING,
         VICTORY,
-        DEFEAT
+        DEFEAT,
+        MENU,
+        PAUSE
     } Game_States;
 
 bool init(SDL_Window **window, SDL_Renderer **renderer);
 void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active);
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state);
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state);
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level);
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer);
+void save_game(size_t level);
+int load_game(size_t *level);
+int menu(SDL_Window *window);
+void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level);
 
 #endif

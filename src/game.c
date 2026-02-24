@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -117,7 +117,6 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             enemies[i].y += enemies[i].vy*dt;
             if (enemies[i].y > SCREEN_HEIGHT - 60){
                 *game_state = DEFEAT;
-                *running = false;
                 break;
             }
         }
@@ -137,7 +136,8 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*enemies_count == 0){
         *game_state = VICTORY;
-        *running = false;
+        *level++;
+        save_game(*level);
     }
 
     if (*bullet_enemies_active){
@@ -151,7 +151,6 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     
     if (player->hp == 0){
         *game_state = DEFEAT;
-        *running = false;
     }
 
     if (*time_since_last_shot >= TIME_BETWEEN_SHOTS/2.0f && !*bullet_enemies_active){
@@ -202,7 +201,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state){
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -278,14 +277,79 @@ SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 SDL_RenderDrawRect(renderer, &outline_rect);
 
 if (*game_state == VICTORY){
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "VICTOIRE !", "", SDL_RenderGetWindow(renderer));
-}
+    const SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Niveau suivant"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
+    };
+    const SDL_MessageBoxData data = {
+        SDL_MESSAGEBOX_INFORMATION,
+        SDL_RenderGetWindow(renderer),
+        "VICTOIRE !",
+        "",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&data, &buttonid);
+    if (buttonid == 0){
+        *level++;
+        save_game(*level);
+        *reset_game = true;
+    } 
+    else {
+        *level++;
+        save_game(*level);
+        *running = false;
+    }}
 
 if (*game_state == DEFEAT){
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "DÉFAITE...", "", SDL_RenderGetWindow(renderer));
+    const SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Recommencer le niveau"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Sauvegarder et quitter"},
+    };
+    const SDL_MessageBoxData data = {
+        SDL_MESSAGEBOX_INFORMATION,
+        SDL_RenderGetWindow(renderer),
+        "DÉFAITE...",
+        "",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&data, &buttonid);
+    if (buttonid == 0){
+        save_game(*level);
+        *reset_game = true;
+    } 
+    else {
+        save_game(*level);
+        *running = false;
+    }
 }
 
 SDL_RenderPresent(renderer);
+}
+
+int menu(SDL_Window *window){
+    const SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Nouvelle partie"},
+        {0, 1, "Charger une sauvegarde"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Quitter"},
+    };
+    const SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION,
+        window,
+        "MENU",
+        "",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&messageboxdata, &buttonid);
+    return buttonid;
 }
 
 void cleanup(SDL_Window *window, SDL_Renderer *renderer){
@@ -294,4 +358,103 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer){
     if (window)
         SDL_DestroyWindow(window);
     SDL_Quit();
+}
+void save_game(size_t level){
+    FILE *file = fopen("save.txt", "w");
+    fprintf(file, "%zu", level);
+    fclose(file);
+}
+
+int load_game(size_t *level){
+    FILE *file = fopen("save.txt", "r");
+    if (file == NULL){
+        return 0;
+    }
+    else if (fscanf(file, "%zu", level) != 1){
+        fclose(file);
+        return 1;
+    }
+    else {
+        fscanf(file, "%zu", level);
+        fclose(file);
+        return 2;
+    }
+}
+
+void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level){
+    *player = (Entity){
+        .x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2,
+        .y = SCREEN_HEIGHT - 60,
+        .w = PLAYER_WIDTH,
+        .h = PLAYER_HEIGHT,
+        .vx = 0,
+        .vy = 0,
+        .hp = MAX_HP};
+
+    *bullet = (Entity){0};
+    *bullet_active = false;
+
+    *bullet_enemies = (Entity){0};
+    *bullet_enemies_active = false;
+    *time_since_last_shot = 0;
+
+    *heart = (Entity){0};
+    *heart_active = false;
+    *time_since_last_heart_attempt = 0;
+
+    *enemies_count = ENEMIES_NUMBER;
+    printf("%d", player->hp);
+    printf("%zu", *enemies_count);
+
+    for (size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
+        for (size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
+            enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
+                .enemy_type = BASIC_ENEMY,
+                .alive = true,
+                .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,
+                .y = SCREEN_HEIGHT/(2*ENEMIES_NUMBER_PER_COLUMN) * i,
+                .w = ENEMY_WIDTH,
+                .h = ENEMY_HEIGHT,
+                .vx = 0,
+                .vy = ENEMY_SPEED,
+                .hp = 1};
+        }
+    }
+
+// Selection of fast enemies
+size_t f = FAST_ENEMIES_NUMBER;
+while (f > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = FAST_ENEMY;
+        enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
+        f--;
+    }
+}
+
+// Selection of tough enemies
+size_t t = TOUGH_ENEMIES_NUMBER;
+while (t > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = TOUGH_ENEMY;
+        enemies[c].hp = TOUGH_ENEMY_HP;
+        t--;
+    }
+}
+
+// Selection of shooting enemies
+size_t s = SHOOTING_ENEMIES_NUMBER;
+while (s > 0){
+    int c = rand() % ENEMIES_NUMBER;
+    if (enemies[c].enemy_type == BASIC_ENEMY){
+        enemies[c].enemy_type = SHOOTING_ENEMY;
+        s--;
+    }
+}
+
+    *shooting_enemies_count = SHOOTING_ENEMIES_NUMBER;
+    *next_is_shooting_enemy = true;
+
+    *time_since_last_acceleration = 0;
 }
