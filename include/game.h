@@ -12,6 +12,7 @@
 #define PLAYER_HEIGHT 20
 #define PLAYER_SPEED 400.0f
 #define MAX_HP 5
+#define TIME_BETWEEN_SHOTS_PLAYER 0.1f
 
 #define BULLET_WIDTH 10
 #define BULLET_HEIGHT 20
@@ -60,8 +61,8 @@ typedef enum{
     } Game_States;
 
 bool init(SDL_Window **window, SDL_Renderer **renderer);
-void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active);
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot);
+void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active, float *time_since_last_shot_player);
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float *time_since_last_shot_player, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot);
 void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game, size_t *enemies_number_tot);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer);
 void save_game(size_t level);

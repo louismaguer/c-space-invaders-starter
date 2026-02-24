@@ -26,7 +26,7 @@ bool init(SDL_Window **window, SDL_Renderer **renderer){
     return true;
 }
 
-void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active){
+void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bullet, bool *bullet_active, float *time_since_last_shot_player){
     SDL_Event event;
     while (SDL_PollEvent(&event)){
         if (event.type == SDL_QUIT)
@@ -39,17 +39,18 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     if (keys[SDL_SCANCODE_RIGHT])
         player->vx = PLAYER_SPEED;
 
-    if (keys[SDL_SCANCODE_SPACE] && !*bullet_active){
+    if (keys[SDL_SCANCODE_SPACE] && !*bullet_active && (*time_since_last_shot_player>TIME_BETWEEN_SHOTS_PLAYER)){
         *bullet_active = true;
         bullet->x = player->x + player->w / 2 - BULLET_WIDTH / 2;
         bullet->y = player->y;
         bullet->w = BULLET_WIDTH;
         bullet->h = BULLET_HEIGHT;
         bullet->vy = -BULLET_SPEED;
+        *time_since_last_shot_player = 0;
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float *time_since_last_shot_player, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
     player->x += player->vx * dt;
 
     if (player->x < 0)
