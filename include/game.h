@@ -27,9 +27,12 @@
 
 #define ENEMY_WIDTH 20
 #define ENEMY_HEIGHT 20
+
+// Paramétrage de la vitessse des ennemis
 #define ENEMY_SPEED 10.0f
 #define SPEED_INCREMENT 2.5f
 #define TIME_BETWEEN_ACCELERATIONS 2.5f
+/////////////////////////////////////////
 
 #define FAST_ENEMIES_RATIO 0.2f
 #define TOUGH_ENEMIES_RATIO 0.2f
