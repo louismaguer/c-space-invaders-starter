@@ -136,7 +136,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*enemies_count == 0){
         *game_state = VICTORY;
-        *level++;
+        (*level)++;
         save_game(*level);
     }
 
@@ -293,12 +293,12 @@ if (*game_state == VICTORY){
     int buttonid;
     SDL_ShowMessageBox(&data, &buttonid);
     if (buttonid == 0){
-        *level++;
+        (*level)++;
         save_game(*level);
         *reset_game = true;
     } 
     else {
-        *level++;
+        (*level)++;
         save_game(*level);
         *running = false;
     }}
