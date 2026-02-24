@@ -182,7 +182,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*time_since_last_shot >= TIME_BETWEEN_SHOTS/2.0f && !*bullet_enemies_active){
         if (*next_is_shooting_enemy && *shooting_enemies_count > 0){
-            size_t shooting_enemies_index[*enemies_count];
+            size_t shooting_enemies_index[ENEMIES_NUMBER*100];
             size_t shooting_enemies_count_aux = 0;
             for (size_t i=0; i<*enemies_number_tot; i++){
                 if (enemies[i].alive && enemies[i].enemy_type == SHOOTING_ENEMY){
@@ -204,7 +204,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *next_is_shooting_enemy = false;
         }
         if (*time_since_last_shot >= TIME_BETWEEN_SHOTS){
-            size_t index_alive[*enemies_count];
+            size_t index_alive[ENEMIES_NUMBER*100];
             size_t alive_count = 0;
             for (size_t i=0; i<*enemies_number_tot; i++){
                 if (enemies[i].alive){
