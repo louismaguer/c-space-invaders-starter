@@ -37,7 +37,7 @@ int main(void){
     float time_since_last_heart_attempt = 0;
 
     size_t enemies_count = ENEMIES_NUMBER;
-    Entity enemies[ENEMIES_NUMBER];
+    Entity enemies[ENEMIES_NUMBER*100];
 
     for (size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
         for (size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
@@ -93,6 +93,8 @@ float time_since_last_acceleration = 0;
 
 Game_States game_state = MENU;
 size_t level = 1;
+size_t enemies_number_tot = ENEMIES_NUMBER;
+bool reset_game = false;
 
 while (game_state == MENU){
     int choice = menu(window);
@@ -104,6 +106,7 @@ while (game_state == MENU){
         switch(load_game(&level)){
             case 2:
                 game_state = RUNNING;
+                reset_game = true;
                 break;
             case 1:
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fichier de sauvegarde invalide", "", window);
@@ -117,8 +120,6 @@ while (game_state == MENU){
             running = false;
     }
 }
-
-bool reset_game = false;
 
     while (running){
         Uint32 ticks = SDL_GetTicks();
@@ -134,10 +135,10 @@ bool reset_game = false;
         SDL_PumpEvents();
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         handle_input(&running, keys, &player, &bullet, &bullet_active);
-        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level);
-        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active, &game_state, &running, &level, &reset_game);
+        update(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level, &enemies_number_tot);
+        render(renderer, &player, enemies, &bullet, bullet_active, &bullet_enemies, bullet_enemies_active, &heart, heart_active, &game_state, &running, &level, &reset_game, &enemies_number_tot);
         if (reset_game){
-            reset(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level);
+            reset(&player, enemies, &enemies_count, &bullet, &bullet_active, &bullet_enemies, &bullet_enemies_active, &heart, &heart_active, &shooting_enemies_count, &next_is_shooting_enemy, &time_since_last_shot, &time_since_last_acceleration, &time_since_last_heart_attempt, dt, &running, &game_state, &level, &enemies_number_tot);
             reset_game = false;
             game_state = RUNNING;
         }

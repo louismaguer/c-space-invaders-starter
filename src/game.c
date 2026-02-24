@@ -49,7 +49,7 @@ void handle_input(bool *running, const Uint8 *keys, Entity *player, Entity *bull
     }
 }
 
-void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level){
+void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
     player->x += player->vx * dt;
 
     if (player->x < 0)
@@ -75,7 +75,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
 
     if (*time_since_last_acceleration >= TIME_BETWEEN_ACCELERATIONS){
         *time_since_last_acceleration = 0;
-        for (size_t i=0; i<ENEMIES_NUMBER; i++){
+        for (size_t i=0; i<*enemies_number_tot; i++){
             if (enemies[i].enemy_type == FAST_ENEMY){
                 enemies[i].vy += FAST_ENEMY_SPEED_MULTPLIER * SPEED_INCREMENT;
             }
@@ -112,7 +112,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         }
     }
                 
-    for (size_t i=0; i<ENEMIES_NUMBER; i++){
+    for (size_t i=0; i<*enemies_number_tot; i++){
         if (enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
             if (enemies[i].y > SCREEN_HEIGHT - 60){
@@ -157,7 +157,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         if (*next_is_shooting_enemy && *shooting_enemies_count > 0){
             size_t shooting_enemies_index[*enemies_count];
             size_t shooting_enemies_count_aux = 0;
-            for (size_t i=0; i<ENEMIES_NUMBER; i++){
+            for (size_t i=0; i<*enemies_number_tot; i++){
                 if (enemies[i].alive && enemies[i].enemy_type == SHOOTING_ENEMY){
                     shooting_enemies_index[shooting_enemies_count_aux] = i;
                     shooting_enemies_count_aux++;
@@ -179,7 +179,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
         if (*time_since_last_shot >= TIME_BETWEEN_SHOTS){
             size_t index_alive[*enemies_count];
             size_t alive_count = 0;
-            for (size_t i=0; i<ENEMIES_NUMBER; i++){
+            for (size_t i=0; i<*enemies_number_tot; i++){
                 if (enemies[i].alive){
                     index_alive[alive_count] = i;
                     alive_count++;
@@ -201,7 +201,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 }
 
-void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game){
+void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bullet, bool bullet_active, Entity *bullet_enemies, bool bullet_enemies_active, Entity *heart, bool heart_active, Game_States *game_state, bool *running, size_t *level, bool *reset_game, size_t *enemies_number_tot){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -212,7 +212,7 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &player_rect);
 
-    for (size_t i=0; i<ENEMIES_NUMBER; i++){
+    for (size_t i=0; i<*enemies_number_tot; i++){
         if(enemies[i].alive){
             SDL_Rect enemy_rect = {
                 (int)enemies[i].x, (int)enemies[i].y,
@@ -381,7 +381,7 @@ int load_game(size_t *level){
     }
 }
 
-void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level){
+void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bullet, bool *bullet_active, Entity *bullet_enemies, bool *bullet_enemies_active, Entity *heart, bool *heart_active, size_t *shooting_enemies_count, bool *next_is_shooting_enemy, float *time_since_last_shot, float *time_since_last_acceleration, float *time_since_last_heart_attempt, float dt, bool *running, Game_States *game_state, size_t *level, size_t *enemies_number_tot){
     *player = (Entity){
         .x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2,
         .y = SCREEN_HEIGHT - 60,
@@ -402,29 +402,37 @@ void reset(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bulle
     *heart_active = false;
     *time_since_last_heart_attempt = 0;
 
-    *enemies_count = ENEMIES_NUMBER;
+    size_t enemies_number_col = ENEMIES_NUMBER_PER_COLUMN + (*level/2);
+    size_t enemies_number_lin = ENEMIES_NUMBER_PER_LINE + ((*level-1)/2);
+    *enemies_number_tot = enemies_number_col*enemies_number_lin;
+
+    *enemies_count = *enemies_number_tot;
     printf("%d", player->hp);
     printf("%zu", *enemies_count);
 
-    for (size_t i=0; i<ENEMIES_NUMBER_PER_COLUMN; i++){
-        for (size_t j=0; j<ENEMIES_NUMBER_PER_LINE; j++){
-            enemies[i*ENEMIES_NUMBER_PER_LINE + j] = (Entity){
+    for (size_t i=0; i<enemies_number_col; i++){
+        for (size_t j=0; j<enemies_number_lin; j++){
+            enemies[i*enemies_number_lin + j] = (Entity){
                 .enemy_type = BASIC_ENEMY,
                 .alive = true,
-                .x = SCREEN_WIDTH/ENEMIES_NUMBER_PER_LINE * (j+0.5) - ENEMY_WIDTH/2,
-                .y = SCREEN_HEIGHT/(2*ENEMIES_NUMBER_PER_COLUMN) * i,
+                .x = SCREEN_WIDTH/enemies_number_lin * (j+0.5) - ENEMY_WIDTH/2,
+                .y = SCREEN_HEIGHT/(2*enemies_number_col) * i,
                 .w = ENEMY_WIDTH,
                 .h = ENEMY_HEIGHT,
                 .vx = 0,
-                .vy = ENEMY_SPEED,
+                .vy = ENEMY_SPEED*(1+(*level)/10),
                 .hp = 1};
         }
     }
 
+size_t fast_enemies_nb = (int)(*enemies_number_tot*FAST_ENEMIES_RATIO);
+size_t tough_enemies_nb = (int)(*enemies_number_tot*TOUGH_ENEMIES_RATIO);
+size_t shooting_enemies_nb = (int)(*enemies_number_tot*SHOOTING_ENEMIES_RATIO);
+
 // Selection of fast enemies
-size_t f = FAST_ENEMIES_NUMBER;
+size_t f = fast_enemies_nb;
 while (f > 0){
-    int c = rand() % ENEMIES_NUMBER;
+    int c = rand() % *enemies_number_tot;
     if (enemies[c].enemy_type == BASIC_ENEMY){
         enemies[c].enemy_type = FAST_ENEMY;
         enemies[c].vy *= FAST_ENEMY_SPEED_MULTPLIER;
@@ -433,9 +441,9 @@ while (f > 0){
 }
 
 // Selection of tough enemies
-size_t t = TOUGH_ENEMIES_NUMBER;
+size_t t = tough_enemies_nb;
 while (t > 0){
-    int c = rand() % ENEMIES_NUMBER;
+    int c = rand() % *enemies_number_tot;
     if (enemies[c].enemy_type == BASIC_ENEMY){
         enemies[c].enemy_type = TOUGH_ENEMY;
         enemies[c].hp = TOUGH_ENEMY_HP;
@@ -444,16 +452,16 @@ while (t > 0){
 }
 
 // Selection of shooting enemies
-size_t s = SHOOTING_ENEMIES_NUMBER;
+size_t s = shooting_enemies_nb;
 while (s > 0){
-    int c = rand() % ENEMIES_NUMBER;
+    int c = rand() % *enemies_number_tot;
     if (enemies[c].enemy_type == BASIC_ENEMY){
         enemies[c].enemy_type = SHOOTING_ENEMY;
         s--;
     }
 }
 
-    *shooting_enemies_count = SHOOTING_ENEMIES_NUMBER;
+    *shooting_enemies_count = shooting_enemies_nb;
     *next_is_shooting_enemy = true;
 
     *time_since_last_acceleration = 0;
