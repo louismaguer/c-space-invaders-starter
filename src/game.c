@@ -62,6 +62,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     if (player->x + player->w > SCREEN_WIDTH)
         player->x = SCREEN_WIDTH - player->w;
 
+        
     if (*bullet_active){
         bullet->y += bullet->vy * dt;
         if (bullet->y + bullet->h < 0)
@@ -116,7 +117,34 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             *heart_active = false;
         }
     }
-                
+
+    SDL_Rect player_rect = {
+        (int)player->x, (int)player->y,
+        player->w, player->h};
+    player->rect = player_rect;
+
+    for (size_t i=0; i<*enemies_number_tot; i++){
+        SDL_Rect enemy_rect = {
+            (int)enemies[i].x, (int)enemies[i].y,
+            enemies[i].w, enemies[i].h};
+        enemies[i].rect = enemy_rect;
+    }
+
+    SDL_Rect heart_rect = {
+        (int)heart->x, (int)heart->y,
+        heart->w, heart->h};
+        heart->rect = heart_rect;
+    
+    SDL_Rect bullet_rect = {
+        (int)bullet->x, (int)bullet->y,
+        bullet->w, bullet->h};
+        bullet->rect = bullet_rect;
+
+    SDL_Rect bullet_enemies_rect = {
+        (int)bullet_enemies->x, (int)bullet_enemies->y,
+        bullet_enemies->w, bullet_enemies->h};
+        bullet_enemies->rect = bullet_enemies_rect;
+
     for (size_t i=0; i<*enemies_number_tot; i++){
         if (enemies[i].alive){
             enemies[i].y += enemies[i].vy*dt;
@@ -126,9 +154,8 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
             }
         }
         if (*bullet_active){
-            SDL_Rect * bullet_rect = &(bullet->rect);
             SDL_Rect * enemy_rect = &(enemies[i].rect);
-            if (enemies[i].alive && SDL_HasIntersection(bullet_rect, enemy_rect)){
+            if (enemies[i].alive && SDL_HasIntersection(&bullet_rect, enemy_rect)){
                 enemies[i].hp -= 1;
                 if (enemies[i].hp == 0){
                     enemies[i].alive = false;
@@ -144,9 +171,7 @@ void update(Entity *player, Entity *enemies, size_t *enemies_count, Entity *bull
     }
 
     if (*bullet_enemies_active){
-        SDL_Rect * bullet_enemies_rect = &(bullet_enemies->rect);
-        SDL_Rect * player_rect = &(player->rect);
-        if (SDL_HasIntersection(bullet_enemies_rect, player_rect)){
+        if (SDL_HasIntersection(&bullet_enemies_rect, &player_rect)){
             *bullet_enemies_active = false;
             player->hp -= 1;
         }
@@ -208,19 +233,13 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    SDL_Rect player_rect = {
-        (int)player->x, (int)player->y,
-        player->w, player->h};
-        player->rect = player_rect;
+    SDL_Rect player_rect = player->rect;
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &player_rect);
 
     for (size_t i=0; i<*enemies_number_tot; i++){
         if(enemies[i].alive){
-            SDL_Rect enemy_rect = {
-                (int)enemies[i].x, (int)enemies[i].y,
-                enemies[i].w, enemies[i].h};
-            enemies[i].rect = enemy_rect;
+            SDL_Rect enemy_rect = enemies[i].rect;
             switch (enemies[i].enemy_type){
                 case BASIC_ENEMY:
                     SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
@@ -243,28 +262,19 @@ void render(SDL_Renderer *renderer, Entity *player, Entity *enemies, Entity *bul
     }
 
     if (heart_active){
-        SDL_Rect heart_rect = {
-            (int)heart->x, (int)heart->y,
-            heart->w, heart->h};
-        heart->rect = heart_rect;
+        SDL_Rect heart_rect = heart->rect;
         SDL_SetRenderDrawColor(renderer, 133, 6, 6, 255);
         SDL_RenderFillRect(renderer, &heart_rect);
     }
 
     if (bullet_active){
-        SDL_Rect bullet_rect = {
-            (int)bullet->x, (int)bullet->y,
-            bullet->w, bullet->h};
-        bullet->rect = bullet_rect;
+        SDL_Rect bullet_rect = bullet->rect;
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(renderer, &bullet_rect);
     }
 
     if (bullet_enemies_active){
-        SDL_Rect bullet_enemies_rect = {
-            (int)bullet_enemies->x, (int)bullet_enemies->y,
-            bullet_enemies->w, bullet_enemies->h};
-        bullet_enemies->rect = bullet_enemies_rect;
+        SDL_Rect bullet_enemies_rect = bullet_enemies->rect;
         SDL_SetRenderDrawColor(renderer, 255, 100, 0, 255);
         SDL_RenderFillRect(renderer, &bullet_enemies_rect);
     }
